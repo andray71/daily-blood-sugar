@@ -3,6 +3,7 @@ package input
 import (
 	"testing"
 	"time"
+	"reflect"
 )
 
 func TestSort(t *testing.T) {
@@ -14,19 +15,19 @@ func TestSort(t *testing.T) {
 	}
 	newEvents := make([]Event,len(events))
 	for i,e := range events {
-		println(e.GetTime().String())
+		println(e.GetTime().String(),reflect.TypeOf(e).String())
 		newEvents[i] = events[i]
 	}
 	println("sorting")
 
 	Sort(newEvents)
+	println("non sorted")
 	for _,e := range events {
-		println(e.GetTime().String())
+		println(e.GetTime().String(),reflect.TypeOf(e).String())
 	}
 	println("sorted")
-
 	for _,e := range newEvents {
-		println(e.GetTime().String())
+		println(e.GetTime().String(),reflect.TypeOf(e).String())
 	}
 	if(!events[0].GetTime().Equal(newEvents[2].GetTime())){
 		t.Fatal("not match")
