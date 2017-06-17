@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
- 	dataBase := database.ConnectToCsvDatabase("testData/FoodDB.csv","testData/Exercise.csv")
+ 	db := database.ConnectToCsvDatabase("testData/FoodDB.csv","testData/Exercise.csv")
 
-	sim := simulator.NewSimulator(config.NewSimulatorConfig(),dataBase).Run([]input.Event{})
+	sim := simulator.NewSimulator(config.NewSimulatorConfig(),db).Run([]input.Event{})
 	println(sim.GetGlycation())
 }

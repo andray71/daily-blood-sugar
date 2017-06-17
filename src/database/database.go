@@ -8,5 +8,5 @@ type Database interface {
 }
 
 func ConnectToCsvDatabase(foodPath, exercisePath string) Database {
- return csv.NewDataBaseFromCsv(foodPath,exercisePath)
+ return csv.NewDb(foodPath,exercisePath)
 }

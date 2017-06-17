@@ -57,7 +57,7 @@ func toInt(s string) (i int){
 	}
 	return
 }
-func NewDataBaseFromCsv(foodPath , exercisePath string) *textCsv {
+func NewDb(foodPath , exercisePath string) *textCsv {
 	foodTable := []food{}
 	readCsvFile(foodPath, func(record []string) {
 		foodTable = append(foodTable,food{id: toInt(record[0]),description: record[1],index: toInt(record[2])})
