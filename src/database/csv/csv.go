@@ -34,22 +34,22 @@ func (s *textCsv)GetExerciseIndex(id int) (index int,ok bool){
 	return
 }
 
-func readCsvFile(path string, rowHandler func([]string)){
+func readCsvFile(path string, rowHandler func([]string), skipFirstRow bool){
 	f, _ := os.Open(path)
 
 	r := csv.NewReader(bufio.NewReader(f))
-	first := true
 	for {
 		record, err := r.Read()
 		if err == io.EOF {
 			break
 		}
-		if first {
-			first = false
+		if skipFirstRow {
+			skipFirstRow = false
 			continue
 		}
 		rowHandler(record)
 	}}
+
 func toInt(s string) (i int){
  i,err := strconv.Atoi(s)
 	if err != nil {
@@ -61,12 +61,12 @@ func NewDataBaseFromCsv(foodPath , exercisePath string) *textCsv {
 	foodTable := []food{}
 	readCsvFile(foodPath, func(record []string) {
 		foodTable = append(foodTable,food{id: toInt(record[0]),description: record[1],index: toInt(record[2])})
-	})
-	exerciseTable := []exercise{}
+	},true)
+	exerciseSlice := []exercise{}
 	readCsvFile(exercisePath, func(record []string) {
-		exerciseTable = append(exerciseTable,exercise{id:toInt(record[0]),description:record[1],index:toInt(record[2])})
-	})
-  return &textCsv{food: foodTable,exercise: exerciseTable}
+		exerciseSlice = append(exerciseSlice,exercise{id:toInt(record[0]),description:record[1],index:toInt(record[2])})
+	},true)
+  return &textCsv{food: foodTable,exercise: exerciseSlice}
 }
 type food struct {
 	id int
