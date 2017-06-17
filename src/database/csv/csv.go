@@ -57,16 +57,16 @@ func toInt(s string) (i int){
 	}
 	return
 }
-func NewDataBaseFromCsv(foodPath string, exercisePath string) *textCsv {
-	foodSlice := []food{}
+func NewDataBaseFromCsv(foodPath , exercisePath string) *textCsv {
+	foodTable := []food{}
 	readCsvFile(foodPath, func(record []string) {
-		foodSlice = append(foodSlice,food{id:toInt(record[0]),description:record[1],index:toInt(record[2])})
+		foodTable = append(foodTable,food{id: toInt(record[0]),description: record[1],index: toInt(record[2])})
 	})
-	exerciseSlice := []exercise{}
+	exerciseTable := []exercise{}
 	readCsvFile(exercisePath, func(record []string) {
-		exerciseSlice = append(exerciseSlice,exercise{id:toInt(record[0]),description:record[1],index:toInt(record[2])})
+		exerciseTable = append(exerciseTable,exercise{id:toInt(record[0]),description:record[1],index:toInt(record[2])})
 	})
-  return &textCsv{food: foodSlice,exercise: exerciseSlice}
+  return &textCsv{food: foodTable,exercise: exerciseTable}
 }
 type food struct {
 	id int
