@@ -1,9 +1,9 @@
-package database
+package csv
 import "testing"
 
 
 func TestCSV(t *testing.T) {
-	database := NewDataBaseFromCsv("../../testData/FoodDB.csv","../../testData/Exercise.csv")
+	database := NewDataBaseFromCsv("../../../testData/FoodDB.csv","../../../testData/Exercise.csv")
 	if(len(database.exercise) != 6){
 		t.Fatal("Expected 6 records read from Exercise.csv csv file. Found",len(database.exercise))
 	}

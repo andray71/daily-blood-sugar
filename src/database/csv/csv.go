@@ -1,4 +1,4 @@
-package database
+package csv
 
 import (
 	"os"
@@ -67,4 +67,14 @@ func NewDataBaseFromCsv(foodPath string, exercisePath string) *textCsv {
 		exerciseSlice = append(exerciseSlice,exercise{id:toInt(record[0]),description:record[1],index:toInt(record[2])})
 	})
   return &textCsv{food: foodSlice,exercise: exerciseSlice}
+}
+type food struct {
+	id int
+	description string
+	index int
+}
+type exercise struct {
+	id int
+	description string
+	index int
 }

@@ -4,7 +4,7 @@ import "../simulator"
 import "../config"
 import "../database"
 func main() {
- 	dataBase := database.NewDataBaseFromCsv("testData/FoodDB.csv","testData/Exercise.csv")
+ 	dataBase := database.ConnectToCsvDatabase("testData/FoodDB.csv","testData/Exercise.csv")
 	if index, ok := dataBase.GetExerciseIndex(2); ok {
 		println("index",index)
 	}
