@@ -28,7 +28,7 @@ func (s *Simulator) updateGlycation(t time.Time){
 	}
 }
 
-func (s *Simulator) processNormalisation(e input.Event) {
+func (s *Simulator) processNormalization(e input.Event) {
 
 	if e.GetTime().Before(s.normalizationLockTime) {
 		return
