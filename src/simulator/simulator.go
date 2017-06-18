@@ -30,7 +30,7 @@ func NewSimulator(conf config.Simulator,db database.Database) Simulator {
 }
 func (s *Simulator) updateGlycation(t time.Time){
 	oldValue := s.currentGlycation
-	if s.currentBloodSugar >= s.BloodSugarLimitToEntreesGlycation {
+	if s.currentBloodSugar > s.BloodSugarLimitToEntreesGlycation {
 		s.currentGlycation++
 	}
 
@@ -46,9 +46,9 @@ func (s *Simulator) updateCharts(t time.Time) {
 	}
 	s.updateGlycation(t)
 }
-func (s *Simulator) processNormalizationEvent(e input.Event) {
+func (s *Simulator) processNormalizationEvent(t time.Time) {
 
-	if e.GetTime().Before(s.normalizationLockTime) {
+	if t.Before(s.normalizationLockTime) {
 		return
 	}
 	if s.currentBloodSugar <= s.MinBloodSugar {
@@ -56,11 +56,20 @@ func (s *Simulator) processNormalizationEvent(e input.Event) {
 	} else {
 		s.currentBloodSugar--
 	}
-	s.updateCharts(e.GetTime())
+	s.updateCharts(t)
 }
+
+func (s *Simulator) updateNormalizationLock(d time.Duration){
+	newLock := s.normalizationLockTime.Add(d)
+	if newLock.After(s.normalizationLockTime){
+		s.normalizationLockTime = newLock
+	}
+}
+
 func (s *Simulator) processFoodEvent(e input.Food) (err error) {
 	if idx, ok := s.db.GetFoodIndex(e.Id); ok {
 		s.currentBloodSugar += idx
+		s.updateNormalizationLock(s.FoodLoock)
 	} else {
 		err = errors.New(fmt.Sprintf("Index not found for Food id %d", e.Id))
 	}
@@ -71,6 +80,7 @@ func (s *Simulator) processFoodEvent(e input.Food) (err error) {
 func (s *Simulator) processExerciseEvent(e input.Exercise) (err error) {
 	if idx, ok := s.db.GetExerciseIndex(e.Id); ok {
 		s.currentBloodSugar -= idx
+		s.updateNormalizationLock(s.ExerciseLock)
 		if s.currentBloodSugar < s.MinBloodSugar {
 			s.currentBloodSugar = s.MinBloodSugar
 		}
@@ -87,7 +97,7 @@ func (s *Simulator) processEvent(e input.Event) (err error){
 	case input.Exercise:
 		err = s.processExerciseEvent(eType)
 	case input.Event:
-		s.processNormalizationEvent(eType)
+		s.processNormalizationEvent(eType.GetTime())
 	default:
 		err = errors.New("Unknown event type")
 	}
@@ -113,7 +123,10 @@ func (s Simulator) Run(events []input.Event) (sim Simulator,err error) {
 		nextEventTime := events[0].GetTime()
 		if tLine.Equal(nextEventTime){
 			err = s.processEvent(events[0])
+		} else if tLine.Before(nextEventTime){
+			s.processNormalizationEvent(tLine)
 		}
+
 		if tLine.Equal(nextEventTime) || tLine.After(nextEventTime){
 			events = events[1:]
 		}
