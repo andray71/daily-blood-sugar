@@ -9,18 +9,44 @@ import (
 
 type Simulator struct {
 	config.Simulator
-	glycation int
-	bloodSugar int
-	currentTime time.Time
-	db database.Database
+	currentGlycation      int
+	glycation []data
+	bloodSugar []data
+	currentBloodSugar     int
+	currentTime           time.Time
+	normalizationLockTime time.Time
+	db                    database.Database
+}
+func (s *Simulator) updateGlycation(t time.Time){
+	oldValue := s.currentGlycation
+	if s.currentBloodSugar >= s.BloodSugarLimitToEntreesGlycation {
+		oldValue++
+	}
+
+	if len(s.glycation) == 0 || oldValue != s.currentGlycation {
+		s.glycation = append(s.glycation,data{time:t,value:s.currentGlycation})
+	}
+}
+
+func (s *Simulator) processNormalisation(e input.Event) {
+
+	if e.GetTime().Before(s.normalizationLockTime) {
+		return
+	}
+
+	if s.currentBloodSugar <= s.MinBloodSugar {
+		s.currentBloodSugar = s.MinBloodSugar
+	} else {
+		s.currentBloodSugar--
+	}
 }
 
 func NewSimulator(conf config.Simulator,db database.Database) Simulator {
 	return Simulator{
-		Simulator:conf,
-		glycation:0,
-		bloodSugar: conf.MinBloodSugar,
-		db:db,
+		Simulator:         conf,
+		currentGlycation:  0,
+		currentBloodSugar: conf.MinBloodSugar,
+		db:                db,
 	}
 }
 func (s *Simulator) processFood(e input.Food){
@@ -41,15 +67,23 @@ func (s *Simulator) processExercise(e input.Exercise) {
 	}
 }
 
-func (s Simulator) Run(in []input.Event) Simulator {
-	if len(in) == 0 {
+func (s Simulator) Run(events []input.Event) Simulator {
+
+	if len(events) == 0 {
 		return s
 	}
 
-	input.Sort(in)
+	input.Sort(events)
 
-	for event := range in {
-		switch eType := interface{}( event).(type) {
+	if s.currentTime.Equal(time.Time{}){
+		begin := events[0].GetTime()
+		begin = time.Date(begin.Year(),begin.Month(),begin.Day(),0,0,0,0,begin.Location())
+	}
+
+
+
+	for event := range events {
+		switch eType := interface{}(event).(type) {
 		case input.Food:
 			s.processFood(eType)
 		case input.Exercise:
@@ -64,8 +98,8 @@ func (s Simulator) Run(in []input.Event) Simulator {
 	return s
 }
 func (s Simulator)GetGlycation() int  {
-	return s.glycation
+	return s.currentGlycation
 }
 func (s Simulator)GetBloodSugar() int  {
-	return s.bloodSugar
+	return s.currentBloodSugar
 }

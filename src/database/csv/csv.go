@@ -1,12 +1,7 @@
 package csv
 
 import (
-	"os"
-	"encoding/csv"
-	"bufio"
-	"io"
-	"fmt"
-	"strconv"
+"../../utils"
 )
 
 type textCsv struct {
@@ -34,40 +29,24 @@ func (s *textCsv)GetExerciseIndex(id int) (index int,ok bool){
 	return
 }
 
-func readCsvFile(path string, rowHandler func([]string), skipFirstRow bool){
-	f, _ := os.Open(path)
-
-	r := csv.NewReader(bufio.NewReader(f))
-	for {
-		record, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if skipFirstRow {
-			skipFirstRow = false
-			continue
-		}
-		rowHandler(record)
-	}}
-
-func toInt(s string) (i int){
- i,err := strconv.Atoi(s)
-	if err != nil {
-		panic(fmt.Sprintf("error convert %s to int",s))
-	}
-	return
-}
 func NewDb(foodPath , exercisePath string) *textCsv {
 	foodTable := []food{}
-	readCsvFile(foodPath, func(record []string) {
-		foodTable = append(foodTable,food{id: toInt(record[0]),description: record[1],index: toInt(record[2])})
+	utils.ReadCsvFile(foodPath, func(record []string,_ int) {
+		foodTable = append(foodTable,food{
+			id: utils.ToIntOrPanic(record[0]),
+			description: record[1],
+			index: utils.ToIntOrPanic(record[2])})
 	},true)
 	exerciseSlice := []exercise{}
-	readCsvFile(exercisePath, func(record []string) {
-		exerciseSlice = append(exerciseSlice,exercise{id:toInt(record[0]),description:record[1],index:toInt(record[2])})
+	utils.ReadCsvFile(exercisePath, func(record []string,_ int) {
+		exerciseSlice = append(exerciseSlice,exercise{
+			id: utils.ToIntOrPanic(record[0]),
+			description: record[1],
+			index: utils.ToIntOrPanic(record[2])})
 	},true)
   return &textCsv{food: foodTable,exercise: exerciseSlice}
 }
+
 type food struct {
 	id int
 	description string

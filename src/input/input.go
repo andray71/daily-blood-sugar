@@ -1,6 +1,10 @@
 package input
 
-import "time"
+import (
+	"time"
+	"../utils"
+	"fmt"
+)
 
 type Event interface {
 	GetTime() time.Time
@@ -24,7 +28,7 @@ type Exercise struct {
 	Id int
 }
 
-func NewEvent(t time.Time) Event {
+func NewEvent(t time.Time) event {
 	return event{t}
 }
 
@@ -43,4 +47,30 @@ func NewExercise(id int, t time.Time) Event {
 			Id:id,
 		},
 	)
+}
+
+func ReadCsv(path string) (events []Event) {
+	layout := "2006-01-02 15:04:05"
+	utils.ReadCsvFile(path, func(rec []string, i int) {
+		ts, err := time.Parse(layout, rec[2])
+		if err != nil {
+			panic(fmt.Sprintf("Invalid time %s on row %d. %s", rec[2], i,err.Error()))
+		}
+		switch rec[0] {
+		case "food":
+			events = append(events, Food{
+				event: NewEvent(ts),
+				Id:    utils.ToIntOrPanic(rec[1]),
+			})
+		case "exercise":
+			events = append(events, Exercise{
+				event: NewEvent(ts),
+				Id:    utils.ToIntOrPanic(rec[1]),
+			})
+		default:
+			panic(fmt.Sprintf("Unknown Event %s",rec[0]))
+		}
+	}, true)
+
+	return
 }

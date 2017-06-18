@@ -1,9 +1,12 @@
 package csv
 import "testing"
 
+func DB4Test() *textCsv  {
+	return NewDb("../../../testData/FoodDB.csv","../../../testData/Exercise.csv")
+}
 
 func TestCSV(t *testing.T) {
-	database := NewDb("../../../testData/FoodDB.csv","../../../testData/Exercise.csv")
+	database := DB4Test()
 	if(len(database.exercise) != 6){
 		t.Fatal("Expected 6 records read from Exercise.csv csv file. Found",len(database.exercise))
 	}
