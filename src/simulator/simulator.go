@@ -118,29 +118,32 @@ func (s Simulator) Run(events []input.Event) (sim Simulator,err error) {
 		events = append([]input.Event{input.NewEvent(begin)},events...)
 	}
 
-	tLine := events[0].GetTime()
+	currentTime := events[0].GetTime()
+	nextEventTime := currentTime
 	for {
-		nextEventTime := events[0].GetTime()
-		if tLine.Equal(nextEventTime){
+		if currentTime.Equal(nextEventTime){
 			err = s.processEvent(events[0])
-		} else if tLine.Before(nextEventTime){
-			s.processNormalizationEvent(tLine)
+		} else if currentTime.Before(nextEventTime){
+			s.processNormalizationEvent(currentTime)
 		}
 
-		if tLine.Equal(nextEventTime) || tLine.After(nextEventTime){
+		if currentTime.Equal(nextEventTime) || currentTime.After(nextEventTime){
 			events = events[1:]
+			if len(events) > 0 {
+				nextEventTime = events[0].GetTime()
+			}
 		}
 
 		if len(events) == 0 {
 			break
 		}
-		tLine = tLine.Add(time.Minute)
+		currentTime = currentTime.Add(time.Minute)
 	}
 	return
 }
-func (s Simulator)GetGlycation() Chart  {
+func (s Simulator)GetGlycationChart() Chart  {
 	return s.glycation
 }
-func (s Simulator)GetBloodSugar() Chart  {
+func (s Simulator)GetBloodSugarChart() Chart  {
 	return s.bloodSugar
 }

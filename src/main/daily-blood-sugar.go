@@ -16,9 +16,9 @@ func main() {
 	}
 
 	println("Chart: Blood Sugar")
-	println(sim.GetBloodSugar().StringCsv())
+	println(sim.GetBloodSugarChart().StringCsv())
 
 
 	println("Chart: Glycation")
-	println(sim.GetGlycation().StringCsv())
+	println(sim.GetGlycationChart().StringCsv())
 }
