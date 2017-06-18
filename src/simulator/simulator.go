@@ -5,6 +5,8 @@ import "../database"
 import (
 	"../input"
 	"time"
+	"errors"
+	"fmt"
 )
 
 type Simulator struct {
@@ -17,29 +19,6 @@ type Simulator struct {
 	normalizationLockTime time.Time
 	db                    database.Database
 }
-func (s *Simulator) updateGlycation(t time.Time){
-	oldValue := s.currentGlycation
-	if s.currentBloodSugar >= s.BloodSugarLimitToEntreesGlycation {
-		oldValue++
-	}
-
-	if len(s.glycation) == 0 || oldValue != s.currentGlycation {
-		s.glycation = append(s.glycation,data{time:t,value:s.currentGlycation})
-	}
-}
-
-func (s *Simulator) processNormalization(e input.Event) {
-
-	if e.GetTime().Before(s.normalizationLockTime) {
-		return
-	}
-
-	if s.currentBloodSugar <= s.MinBloodSugar {
-		s.currentBloodSugar = s.MinBloodSugar
-	} else {
-		s.currentBloodSugar--
-	}
-}
 
 func NewSimulator(conf config.Simulator,db database.Database) Simulator {
 	return Simulator{
@@ -49,57 +28,106 @@ func NewSimulator(conf config.Simulator,db database.Database) Simulator {
 		db:                db,
 	}
 }
-func (s *Simulator) processFood(e input.Food){
-	println("got food", e.Id)
+func (s *Simulator) updateGlycation(t time.Time){
+	oldValue := s.currentGlycation
+	if s.currentBloodSugar >= s.BloodSugarLimitToEntreesGlycation {
+		s.currentGlycation++
+	}
+
+	if len(s.glycation) == 0 || oldValue != s.currentGlycation {
+		s.glycation = append(s.glycation,data{time:t,value:s.currentGlycation})
+	}
+}
+
+func (s *Simulator) updateCharts(t time.Time) {
+
+	if len(s.bloodSugar) == 0 || s.currentBloodSugar != s.bloodSugar[len(s.bloodSugar)-1].value {
+		s.bloodSugar = append(s.bloodSugar, data{time: t, value: s.currentBloodSugar})
+	}
+	s.updateGlycation(t)
+}
+func (s *Simulator) processNormalizationEvent(e input.Event) {
+
+	if e.GetTime().Before(s.normalizationLockTime) {
+		return
+	}
+	if s.currentBloodSugar <= s.MinBloodSugar {
+		s.currentBloodSugar = s.MinBloodSugar
+	} else {
+		s.currentBloodSugar--
+	}
+	s.updateCharts(e.GetTime())
+}
+func (s *Simulator) processFoodEvent(e input.Food) (err error) {
 	if idx, ok := s.db.GetFoodIndex(e.Id); ok {
-		println("\tindex", idx)
+		s.currentBloodSugar += idx
 	} else {
-		println("\tindex not found", idx)
+		err = errors.New(fmt.Sprintf("Index not found for Food id %d", e.Id))
 	}
+	s.updateCharts(e.GetTime())
+	return
 }
 
-func (s *Simulator) processExercise(e input.Exercise) {
-	println("got exercise", e.Id)
+func (s *Simulator) processExerciseEvent(e input.Exercise) (err error) {
 	if idx, ok := s.db.GetExerciseIndex(e.Id); ok {
-		println("\tindex", idx)
+		s.currentBloodSugar -= idx
+		if s.currentBloodSugar < s.MinBloodSugar {
+			s.currentBloodSugar = s.MinBloodSugar
+		}
 	} else {
-		println("\tindex not found", idx)
+		err = errors.New(fmt.Sprintf("Index not found for Exercise id %d", e.Id))
 	}
+	s.updateCharts(e.GetTime())
+	return
 }
+func (s *Simulator) processEvent(e input.Event) (err error){
+	switch eType := interface{}(e).(type) {
+	case input.Food:
+		err = s.processFoodEvent(eType)
+	case input.Exercise:
+		err = s.processExerciseEvent(eType)
+	case input.Event:
+		s.processNormalizationEvent(eType)
+	default:
+		err = errors.New("Unknown event type")
+	}
+	return
+}
+func (s Simulator) Run(events []input.Event) (sim Simulator,err error) {
 
-func (s Simulator) Run(events []input.Event) Simulator {
-
+	sim = s
 	if len(events) == 0 {
-		return s
+		return
 	}
 
 	input.Sort(events)
 
-	if s.currentTime.Equal(time.Time{}){
+	if s.currentTime.Equal(time.Time{}) {
 		begin := events[0].GetTime()
-		begin = time.Date(begin.Year(),begin.Month(),begin.Day(),0,0,0,0,begin.Location())
+		begin = time.Date(begin.Year(), begin.Month(), begin.Day(), 0, 0, 0, 0, begin.Location())
+		events = append([]input.Event{input.NewEvent(begin)},events...)
 	}
 
-
-
-	for event := range events {
-		switch eType := interface{}(event).(type) {
-		case input.Food:
-			s.processFood(eType)
-		case input.Exercise:
-			s.processExercise(eType)
-		case input.Event:
-			println("got simple event")
-		default:
-			panic("Unknown event type")
+	tLine := events[0].GetTime()
+	for {
+		nextEventTime := events[0].GetTime()
+		if tLine.Equal(nextEventTime){
+			err = s.processEvent(events[0])
 		}
-	}
+		if tLine.Equal(nextEventTime) || tLine.After(nextEventTime){
+			events = events[1:]
+		}
 
-	return s
+		if len(events) == 0 {
+			break
+		}
+		tLine = tLine.Add(time.Minute)
+	}
+	return
 }
-func (s Simulator)GetGlycation() int  {
-	return s.currentGlycation
+func (s Simulator)GetGlycation() Chart  {
+	return s.glycation
 }
-func (s Simulator)GetBloodSugar() int  {
-	return s.currentBloodSugar
+func (s Simulator)GetBloodSugar() Chart  {
+	return s.bloodSugar
 }
