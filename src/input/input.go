@@ -52,9 +52,12 @@ func NewExercise(id int, t time.Time) Event {
 func ReadCsv(path string) (events []Event) {
 	layout := "2006-01-02 15:04:05"
 	utils.ReadCsvFile(path, func(rec []string, i int) {
-		ts, err := time.Parse(layout, rec[2])
+
+		//replacing seconds
+		t := rec[2][:len(layout)-2] + "00"
+		ts, err := time.Parse(layout, t)
 		if err != nil {
-			panic(fmt.Sprintf("Invalid time %s on row %d. %s", rec[2], i,err.Error()))
+			panic(fmt.Sprintf("Invalid time fomat %s on row %d. %s", rec[2], i,err.Error()))
 		}
 		switch rec[0] {
 		case "food":
