@@ -10,7 +10,8 @@ import (
 func main() {
  	db := database.ConnectToCsvDatabase("testData/FoodDB.csv","testData/Exercise.csv")
 
-	sim,err := simulator.NewSimulator(config.NewSimulatorConfig(),db).Run([]input.Event{})
+	events := input.ReadCsv("testData/input1.csv")
+	sim,err := simulator.NewSimulator(config.NewSimulatorConfig(),db).Run(events)
 	if err != nil {
 		panic(err)
 	}

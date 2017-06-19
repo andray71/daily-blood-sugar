@@ -3,8 +3,8 @@ package config
 import "time"
 
 type Simulator struct {
-	MinBloodSugar            int
-	BloodSugarLimitToEntreesGlycation int
+	MinBloodSugar            float64
+	BloodSugarLimitToEntreesGlycation float64
 	GlycationEncrimentBy int
 	FoodLoock time.Duration
 	ExerciseLock time.Duration
