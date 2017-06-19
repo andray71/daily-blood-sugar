@@ -86,9 +86,14 @@ func (s *Simulator) processExerciseEvent(e input.Exercise) (err error) {
 func (s *Simulator) processEvent(e input.Event) (err error){
 	switch eType := interface{}(e).(type) {
 	case input.Food:
+//		println("processing food",eType.GetTime().String())
 		err = s.processFoodEvent(eType)
 	case input.Exercise:
+//		println("processing Exercise",eType.GetTime().String())
 		err = s.processExerciseEvent(eType)
+	//case input.Event:
+	//	println("processing other",eType.GetTime().String())
+
 	}
 	return
 }
@@ -105,7 +110,11 @@ func (s Simulator) Run(events []input.Event) (ret Simulator,err error) {
 	if ref.currentTime.Equal(time.Time{}) {
 		begin := events[0].GetTime()
 		begin = time.Date(begin.Year(), begin.Month(), begin.Day(), 0, 0, 0, 0, begin.Location())
-		events = append([]input.Event{input.NewEvent(begin)},events...)
+		end := begin.Add(time.Hour*24 - time.Minute)
+		events = append([]input.Event{input.NewEvent(begin)}, events...)
+		if (events[len(events)-1].GetTime().Before(end)) {
+			events = append(events, input.NewEvent(end))
+		}
 	}
 
 	currentTime := events[0].GetTime()
@@ -115,7 +124,8 @@ func (s Simulator) Run(events []input.Event) (ret Simulator,err error) {
 
 			newEvents := []input.Event{}
 			for _, e := range events {
-				if currentTime.Equal(e.GetTime()) {
+				if !currentTime.Before(e.GetTime()) {
+
 					err = ref.processEvent(events[0])
 				} else {
 					newEvents = append(newEvents, e)

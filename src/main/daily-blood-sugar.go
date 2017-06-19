@@ -20,6 +20,6 @@ func main() {
 	println(sim.GetBloodSugarChart().StringCsv())
 
 
-	println("Chart: Glycation")
-	println(sim.GetGlycationChart().StringCsv())
+	//println("Chart: Glycation")
+	//println(sim.GetGlycationChart().StringCsv())
 }
