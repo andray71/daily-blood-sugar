@@ -92,9 +92,6 @@ func (s *Simulator) processEvent(e input.Event) (err error){
 		err = s.processFoodEvent(eType)
 	case input.Exercise:
 		err = s.processExerciseEvent(eType)
-	case input.Event:
-	default:
-		err = errors.New("Unknown event type")
 	}
 	return
 }
