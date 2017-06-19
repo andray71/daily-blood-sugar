@@ -30,16 +30,6 @@ func NewSimulator(conf config.Simulator,db database.Database) Simulator {
 		db:                db,
 	}
 }
-func (s *Simulator) updateGlycation(t time.Time){
-	oldValue := s.currentGlycation
-	if s.currentBloodSugar > s.BloodSugarLimitToEntreesGlycation {
-		s.currentGlycation++
-	}
-
-	if len(s.glycation) == 0 || oldValue != s.currentGlycation {
-		s.glycation = append(s.glycation,data{time:t,value:s.currentGlycation})
-	}
-}
 func (s *Simulator) updateBloodSugar(t time.Time){
 	newBloodSugarAffectTable := []data{}
 	for _,d := range s.bloodSugarAffectTable {
@@ -55,15 +45,22 @@ func (s *Simulator) updateBloodSugar(t time.Time){
 	if s.currentBloodSugar < s.MinBloodSugar {
 		s.currentBloodSugar = s.MinBloodSugar
 	}
-    s.updateCharts(t)
 }
+
+func (s *Simulator) updateGlycation(t time.Time){
+	if s.currentBloodSugar > s.BloodSugarLimitToEntreesGlycation {
+		s.currentGlycation++
+	}
+}
+
 func (s *Simulator) updateCharts(t time.Time) {
 
 	if len(s.bloodSugar) == 0 || s.currentBloodSugar != s.bloodSugar[len(s.bloodSugar)-1].value {
 		s.bloodSugar = append(s.bloodSugar, data{time: t, value: s.currentBloodSugar})
 	}
-
-	s.updateGlycation(t)
+	if len(s.glycation) == 0 ||  s.currentGlycation != s.glycation[len(s.glycation)-1].value {
+		s.glycation = append(s.glycation,data{time:t,value:s.currentGlycation})
+	}
 }
 
 func (s *Simulator) addBloodSugarAffectingItem(value float64, until time.Time){
@@ -133,6 +130,8 @@ func (s Simulator) Run(events []input.Event) (ret Simulator,err error) {
 			}
 		}
 		ref.updateBloodSugar(currentTime)
+		ref.updateGlycation(currentTime)
+		ref.updateCharts(currentTime)
 		currentTime = currentTime.Add(time.Minute)
 	}
 	ret = *ref
