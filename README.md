@@ -1,9 +1,12 @@
 # daily-blood-sugar
 daily blood sugar simulator
 
-to build:
+### to build:
+```
     go build ./src/main/daily-blood-sugar.go
-
+```
+### Run Syntax 
+```
 daily-blood-sugar.exe -h
 Usage of daily-blood-sugar.exe:
 -bschart string
@@ -16,3 +19,5 @@ Food data csv file path (default "testData/FoodDB.csv")
 Output Glycation Chart csv file path (default "testData/glycationChart.csv")
 -inputcsv string
 Input data csv file path (default "testData/input1.csv")
+
+```
