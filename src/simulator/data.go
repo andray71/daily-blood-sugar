@@ -15,11 +15,11 @@ type data struct {
 }
 
 func (s data) String() string {
-	return fmt.Sprintf("{%s, %d}",s.time.String(),s.value)
+	return fmt.Sprintf("{%s, %f}",s.time.String(),s.value)
 }
 
 func (s data) StringCsv() string {
-	return fmt.Sprintf("%s, %f",s.time.String(),s.value)
+	return fmt.Sprintf("%s, %f",s.time.Format(utils.DateTimeFormat),s.value)
 }
 
 func (s Chart) StringCsv() string {

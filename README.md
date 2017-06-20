@@ -5,7 +5,7 @@ daily blood sugar simulator
 ```
     go build ./src/main/daily-blood-sugar.go
 ```
-### Run Syntax 
+### Run Syntax
 ```
 daily-blood-sugar.exe -h
 Usage of daily-blood-sugar.exe:
