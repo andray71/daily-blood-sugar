@@ -27,10 +27,10 @@ func main() {
 	}
 
 
-	if strings.HasSuffix(*outBSFile,".csv") {
+	if !strings.HasSuffix(*outBSFile,".csv") {
 		*outBSFile = *outBSFile + ".csv"
 	}
-	if strings.HasSuffix(*outGlFile,".csv") {
+	if !strings.HasSuffix(*outGlFile,".csv") {
 		*outGlFile = *outGlFile + ".csv"
 	}
 
