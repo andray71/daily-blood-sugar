@@ -93,7 +93,7 @@ func (s *Simulator) processEvent(e input.Event) (err error){
 	return
 }
 
-func setTimeToZerro(t time.Time) time.Time {
+func setTimeToZero(t time.Time) time.Time {
  return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 }
 
@@ -109,10 +109,10 @@ func (s Simulator) Run(events []input.Event) (ret Simulator,err error) {
 
 	if ref.currentTime.Equal(time.Time{}) {
 		begin := events[0].GetTime()
-		begin = setTimeToZerro(begin)
+		begin = setTimeToZero(begin)
 	}
 
-	end := setTimeToZerro( events[len(events)-1].GetTime()).Add(time.Hour*24 - time.Minute)
+	end := setTimeToZero( events[len(events)-1].GetTime()).Add(time.Hour*24 - time.Minute)
 	events = append(events, input.NewEvent(end))
 
 	currentTime := events[0].GetTime()
