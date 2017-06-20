@@ -9,6 +9,7 @@ import (
 	"io"
 )
 
+var DateTimeFormat = "2006-01-02 15:04:05"
 func ToIntOrPanic(s string) (i int){
 	i,err := strconv.Atoi(s)
 	if err != nil {

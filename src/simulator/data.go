@@ -4,6 +4,8 @@ import (
 	"time"
 	"fmt"
 	"bytes"
+	"encoding/csv"
+	"../utils"
 )
 type Chart []data
 
@@ -26,4 +28,10 @@ func (s Chart) StringCsv() string {
 		buffer.WriteString(fmt.Sprintln(d.StringCsv()))
 	}
 	return buffer.String()
+}
+
+func (s Chart) WriteCsv(writer *csv.Writer){
+	for _,d:= range s {
+		writer.Write([]string{d.time.Format(utils.DateTimeFormat),fmt.Sprintf("%f",d.value)})
+	}
 }

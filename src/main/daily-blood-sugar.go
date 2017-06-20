@@ -5,21 +5,47 @@ import "../config"
 import "../database"
 import (
 	"../input"
+	"flag"
+	"strings"
+	"os"
+	"encoding/csv"
 )
 
 func main() {
- 	db := database.ConnectToCsvDatabase("testData/FoodDB.csv","testData/Exercise.csv")
+	csvFood := flag.String("foodcsv", "testData/FoodDB.csv","Food data csv file path")
+	csvExercise := flag.String("exercisecsv", "testData/Exercise.csv","Exercise data csv file path")
+	inFile := flag.String("inputcsv", "testData/input1.csv","Input data csv file path")
+	outBSFile := flag.String("bschart", "testData/bloodShugarChart.csv","Output Blood Sugar Chart csv file path")
+	outGlFile := flag.String("glchart", "testData/glycationChart.csv","Output Glycation Chart csv file path")
 
-	events := input.ReadCsv("testData/input1.csv")
-	sim,err := simulator.NewSimulator(config.NewSimulatorConfig(),db).Run(events)
+	flag.Parse()
+
+	events := input.ReadCsv(*inFile)
+	sim,err := simulator.NewSimulator(config.NewSimulatorConfig(),database.ConnectToCsvDatabase(*csvFood,*csvExercise)).Run(events)
 	if err != nil {
 		panic(err)
 	}
 
-	println("Chart: Blood Sugar")
-	println(sim.GetBloodSugarChart().StringCsv())
 
+	if strings.HasSuffix(*outBSFile,".csv") {
+		*outBSFile = *outBSFile + ".csv"
+	}
+	if strings.HasSuffix(*outGlFile,".csv") {
+		*outGlFile = *outGlFile + ".csv"
+	}
 
-	//println("Chart: Glycation")
-	//println(sim.GetGlycationChart().StringCsv())
+	WriteCsv(*outBSFile,sim.GetBloodSugarChart().WriteCsv)
+	WriteCsv(*outGlFile,sim.GetGlycationChart().WriteCsv)
+	println("Done")
+}
+
+func WriteCsv(path string, handler func(*csv.Writer)) {
+	file, err := os.Create(path)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	w := csv.NewWriter(file)
+	defer w.Flush()
+	handler(w)
 }

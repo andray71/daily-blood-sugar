@@ -86,17 +86,17 @@ func (s *Simulator) processExerciseEvent(e input.Exercise) (err error) {
 func (s *Simulator) processEvent(e input.Event) (err error){
 	switch eType := interface{}(e).(type) {
 	case input.Food:
-//		println("processing food",eType.GetTime().String())
 		err = s.processFoodEvent(eType)
 	case input.Exercise:
-//		println("processing Exercise",eType.GetTime().String())
 		err = s.processExerciseEvent(eType)
-	//case input.Event:
-	//	println("processing other",eType.GetTime().String())
-
 	}
 	return
 }
+
+func setTimeToZerro(t time.Time) time.Time {
+ return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+}
+
 func (s Simulator) Run(events []input.Event) (ret Simulator,err error) {
 
 	ref := &s
@@ -109,13 +109,11 @@ func (s Simulator) Run(events []input.Event) (ret Simulator,err error) {
 
 	if ref.currentTime.Equal(time.Time{}) {
 		begin := events[0].GetTime()
-		begin = time.Date(begin.Year(), begin.Month(), begin.Day(), 0, 0, 0, 0, begin.Location())
-		end := begin.Add(time.Hour*24 - time.Minute)
-		events = append([]input.Event{input.NewEvent(begin)}, events...)
-		if (events[len(events)-1].GetTime().Before(end)) {
-			events = append(events, input.NewEvent(end))
-		}
+		begin = setTimeToZerro(begin)
 	}
+
+	end := setTimeToZerro( events[len(events)-1].GetTime()).Add(time.Hour*24 - time.Minute)
+	events = append(events, input.NewEvent(end))
 
 	currentTime := events[0].GetTime()
 	nextEventTime := currentTime
