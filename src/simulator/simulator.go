@@ -109,7 +109,8 @@ func (s Simulator) Run(events []input.Event) (ret Simulator,err error) {
 
 	if ref.currentTime.Equal(time.Time{}) {
 		begin := events[0].GetTime()
-		begin = setTimeToZero(begin)
+		begin = begin.Add(time.Minute* -1)
+		events = append([]input.Event{input.NewEvent(begin)},events...)
 	}
 
 	end := setTimeToZero( events[len(events)-1].GetTime()).Add(time.Hour*24 - time.Minute)
