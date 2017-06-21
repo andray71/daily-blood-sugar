@@ -29,14 +29,13 @@ func NewSimulator(conf config.Simulator,db database.Database) Simulator {
 	}
 }
 func (s *Simulator) updateBloodSugar(t time.Time){
-	newBloodSugarAffectTable := []data{}
-	for _,d := range s.bloodSugarAffectTable {
+	for i,d := range s.bloodSugarAffectTable {
 		if  t.Before(d.time){
 			s.currentBloodSugar += d.value
-			newBloodSugarAffectTable = append(newBloodSugarAffectTable,d)
+		} else {
+			s.bloodSugarAffectTable = append(s.bloodSugarAffectTable[0:i],s.bloodSugarAffectTable[i+1:]...)
 		}
 	}
-	s.bloodSugarAffectTable = newBloodSugarAffectTable
     if len(s.bloodSugarAffectTable) == 0 {
 		s.currentBloodSugar--
 	}
