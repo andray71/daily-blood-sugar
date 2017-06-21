@@ -24,7 +24,7 @@ func NewSimulator(conf config.Simulator,db database.Database) Simulator {
 	return Simulator{
 		Simulator:         conf,
 		currentGlycation:  0,
-		currentBloodSugar: conf.MinBloodSugar,
+		currentBloodSugar: 0,
 		db:                db,
 	}
 }
