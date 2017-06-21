@@ -23,8 +23,9 @@ func main() {
 	flag.Parse()
 
 	var file *os.File
+	var err error
 	if *out != "" {
-		file, err := os.Create(*out)
+		file, err = os.Create(*out)
 		defer file.Close()
 		if err != nil {
 			panic(err)
@@ -37,7 +38,7 @@ func main() {
 	defer w.Flush()
 
 	events := input.ReadCsv(*in)
-	_, err := simulator.NewSimulator(config.NewSimulatorConfig(),
+	_, err = simulator.NewSimulator(config.NewSimulatorConfig(),
 		database.ConnectToCsvDatabase(*csvFood, *csvExercise)).Run(events, func(t time.Time, bloodSugar float64, glycation int) {
 		w.Write([]string{
 			t.Format(utils.DateTimeFormat),
