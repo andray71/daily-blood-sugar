@@ -14,9 +14,7 @@ type Simulator struct {
 	currentGlycation      int
 	currentBloodSugar     float64
 	currentTime           time.Time
-
 	bloodSugarAffectTable []data
-
 	db                    database.Database
 }
 
@@ -84,11 +82,9 @@ func setTimeToZero(t time.Time) time.Time {
  return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 }
 
-func (s Simulator) Run(events []input.Event, receiver func(time.Time,float64,int)) (ret Simulator,err error) {
-
+func (s Simulator) Run(events []input.Event, receiver func(time.Time,float64,int)) (err error) {
 	ref := &s
 	if len(events) == 0 {
-		ret = *ref
 		return
 	}
 
@@ -135,6 +131,5 @@ func (s Simulator) Run(events []input.Event, receiver func(time.Time,float64,int
 		}
 		currentTime = currentTime.Add(time.Minute)
 	}
-	ret = *ref
 	return
 }

@@ -38,7 +38,7 @@ func main() {
 	defer w.Flush()
 
 	events := input.ReadCsv(*in)
-	_, err = simulator.NewSimulator(config.NewSimulatorConfig(),
+	err = simulator.NewSimulator(config.NewSimulatorConfig(),
 		database.ConnectToCsvDatabase(*csvFood, *csvExercise)).Run(events, func(t time.Time, bloodSugar float64, glycation int) {
 		w.Write([]string{
 			t.Format(utils.DateTimeFormat),

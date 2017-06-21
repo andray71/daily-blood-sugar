@@ -20,12 +20,11 @@ func TestSimulator(t *testing.T) {
 
 	simulator:= NewSimulator(config.NewSimulatorConfig(),DB4Test())
 
-	simulator,err := simulator.Run(events, func(time time.Time,bloodSugar float64,glycation int){
+	err := simulator.Run(events, func(time time.Time,bloodSugar float64,glycation int){
 	 fmt.Println(time.Format(utils.DateTimeFormat),fmt.Sprintf("%f" ,bloodSugar),glycation)
 	})
 
 	if err != nil{
 		t.Fatal(err)
 	}
-
 }
