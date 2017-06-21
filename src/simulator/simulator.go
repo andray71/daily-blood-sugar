@@ -11,9 +11,7 @@ import (
 
 type Simulator struct {
 	config.Simulator
-	currentGlycation      float64
-	glycation []data
-	bloodSugar []data
+	currentGlycation      int
 	currentBloodSugar     float64
 	currentTime           time.Time
 
@@ -53,16 +51,6 @@ func (s *Simulator) updateGlycation(t time.Time){
 	}
 }
 
-func (s *Simulator) updateCharts(t time.Time) {
-
-	if len(s.bloodSugar) == 0 || s.currentBloodSugar != s.bloodSugar[len(s.bloodSugar)-1].value {
-		s.bloodSugar = append(s.bloodSugar, data{time: t, value: s.currentBloodSugar})
-	}
-	if len(s.glycation) == 0 ||  s.currentGlycation != s.glycation[len(s.glycation)-1].value {
-		s.glycation = append(s.glycation,data{time:t,value:s.currentGlycation})
-	}
-}
-
 func (s *Simulator) addBloodSugarAffectingItem(value float64, until time.Time){
 	s.bloodSugarAffectTable = append(s.bloodSugarAffectTable,data{time:until,value:value})
 }
@@ -97,7 +85,7 @@ func setTimeToZero(t time.Time) time.Time {
  return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 }
 
-func (s Simulator) Run(events []input.Event) (ret Simulator,err error) {
+func (s Simulator) Run(events []input.Event, receiver func(time.Time,float64,int)) (ret Simulator,err error) {
 
 	ref := &s
 	if len(events) == 0 {
@@ -118,14 +106,17 @@ func (s Simulator) Run(events []input.Event) (ret Simulator,err error) {
 
 	currentTime := events[0].GetTime()
 	nextEventTime := currentTime
+
 	for {
+
+		lastBloodSugar :=ref.currentBloodSugar
+		lastGlycation := ref.currentGlycation
 		if !nextEventTime.After(currentTime) {
 
 			newEvents := []input.Event{}
 			for _, e := range events {
 				if !currentTime.Before(e.GetTime()) {
-
-					err = ref.processEvent(events[0])
+					err = ref.processEvent(e)
 				} else {
 					newEvents = append(newEvents, e)
 				}
@@ -140,15 +131,11 @@ func (s Simulator) Run(events []input.Event) (ret Simulator,err error) {
 		}
 		ref.updateBloodSugar(currentTime)
 		ref.updateGlycation(currentTime)
-		ref.updateCharts(currentTime)
+		if(lastBloodSugar != ref.currentBloodSugar || lastGlycation!=ref.currentGlycation) {
+			receiver(currentTime, ref.currentBloodSugar, ref.currentGlycation)
+		}
 		currentTime = currentTime.Add(time.Minute)
 	}
 	ret = *ref
 	return
-}
-func (s Simulator)GetGlycationChart() Chart  {
-	return s.glycation
-}
-func (s Simulator)GetBloodSugarChart() Chart  {
-	return s.bloodSugar
 }

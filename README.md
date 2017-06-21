@@ -7,8 +7,13 @@ daily blood sugar simulator
 ```
 ### Run Syntax
 ```
-daily-blood-sugar.exe -h
-Usage of daily-blood-sugar.exe:
+Windows
+daily-blood-sugar.exe
+
+Linux/Mac
+daily-blood-sugar
+
+Options/Parameters:
 -bschart string
 Output Blood Sugar Chart csv file path (default "testData/bloodShugarChart.csv")
 -exercisecsv string
