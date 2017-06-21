@@ -46,7 +46,7 @@ func (s *Simulator) updateBloodSugar(t time.Time){
 }
 
 func (s *Simulator) updateGlycation(t time.Time){
-	if s.currentBloodSugar > s.BloodSugarLimitToEntreesGlycation {
+	if s.currentBloodSugar > s.BloodSugarLimitToEncrimentGlycation {
 		s.currentGlycation++
 	}
 }
@@ -57,7 +57,7 @@ func (s *Simulator) addBloodSugarAffectingItem(value float64, until time.Time){
 
 func (s *Simulator) processFoodEvent(e input.Food) (err error) {
 	if idx, ok := s.db.GetFoodIndex(e.Id); ok {
-		s.addBloodSugarAffectingItem(float64(idx)/100+1,e.Time.Add(s.FoodLoock))
+		s.addBloodSugarAffectingItem(float64(idx)/100+1,e.Time.Add(s.FoodLock))
 	} else {
 		err = errors.New(fmt.Sprintf("Index not found for Food id %d", e.Id))
 	}
